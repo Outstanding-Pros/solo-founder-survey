@@ -12,6 +12,8 @@ export type SurveyFormData = {
   mvpDevelopment: DifficultyLevel;
   marketing: DifficultyLevel;
   futureServiceInterest: DifficultyLevel;
+  wantInterview: "yes" | "no";
+  interviewContact: string;
   comments: string;
 };
 

@@ -31,13 +31,15 @@ export async function appendToSheet(data: SurveyFormData) {
       data.mvpDevelopment,
       data.marketing,
       data.futureServiceInterest,
+      data.wantInterview === "yes" ? "예" : "아니오",
+      data.interviewContact || "",
       data.comments || "",
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "A:M",
+    range: "A:O",
     valueInputOption: "RAW",
     requestBody: {
       values,
