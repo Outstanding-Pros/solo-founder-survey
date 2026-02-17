@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { GNB } from "@/components/GNB";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -8,8 +9,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "1인 창업가 설문조사",
-  description: "1인 창업 과정에서 겪는 어려움에 대한 설문조사",
+  title: "Outstanding Pros",
+  description: "1인 창업가를 위한 유저 리서치 솔루션",
 };
 
 export default function RootLayout({
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={spaceGrotesk.className}>
+        <GNB />
         {children}
       </body>
     </html>

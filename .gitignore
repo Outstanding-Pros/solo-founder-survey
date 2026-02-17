@@ -9,7 +9,7 @@ next-env.d.ts
 
 # Environment
 .env.local
-.env*.local
+.env*
 
 # Misc
 .DS_Store

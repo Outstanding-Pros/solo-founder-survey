@@ -30,19 +30,87 @@ export function SwiperSurveyForm() {
     reset,
     setValue,
     watch,
+    trigger,
+    getValues,
   } = useForm<SurveyFormData>();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [canAdvance, setCanAdvance] = useState(false);
   const swiperRef = useRef<SwiperType | null>(null);
 
   const wantInterview = watch("wantInterview");
+  const formValues = watch();
+
+  // Map slide index to required form field
+  const getSlideField = (index: number): keyof SurveyFormData | null => {
+    const fields: (keyof SurveyFormData)[] = [
+      "itemSelection",
+      "fmf",
+      "aiRejection",
+      "itemValidation",
+      "intervieweeRecruitment",
+      "channelFinding",
+      "mvpDevelopment",
+      "marketing",
+      "futureServiceInterest",
+      "wantInterview",
+    ];
+    if (index < 10) return fields[index];
+    if (wantInterview === "yes" && index === 10) return "interviewContact";
+    return null; // last slide (optional fields)
+  };
+
+  // Control forward navigation: block if current question unanswered
+  useEffect(() => {
+    if (!swiperRef.current) return;
+    const field = getSlideField(currentSlide);
+    const isAnswered = !field || !!formValues[field];
+    swiperRef.current.allowSlideNext = isAnswered;
+    setCanAdvance(isAnswered);
+  }, [currentSlide, formValues, wantInterview]);
 
   const goToNextSlide = () => {
     if (swiperRef.current) {
+      swiperRef.current.allowSlideNext = true;
       swiperRef.current.slideNext();
     }
+  };
+
+  // Prevent jumping to unanswered slides via pagination clicks
+  const handleSlideChange = (swiper: SwiperType) => {
+    const values = getValues();
+    const totalSlideCount = wantInterview === "yes" ? 12 : 11;
+    let maxReachable = totalSlideCount - 1;
+    for (let i = 0; i < totalSlideCount; i++) {
+      const fields: (keyof SurveyFormData)[] = [
+        "itemSelection",
+        "fmf",
+        "aiRejection",
+        "itemValidation",
+        "intervieweeRecruitment",
+        "channelFinding",
+        "mvpDevelopment",
+        "marketing",
+        "futureServiceInterest",
+        "wantInterview",
+      ];
+      let field: keyof SurveyFormData | null = null;
+      if (i < 10) field = fields[i];
+      else if (wantInterview === "yes" && i === 10) field = "interviewContact";
+
+      if (field && !values[field]) {
+        maxReachable = i;
+        break;
+      }
+    }
+
+    if (swiper.activeIndex > maxReachable) {
+      swiper.slideTo(maxReachable);
+      return;
+    }
+    setCurrentSlide(swiper.activeIndex);
   };
 
   const onSubmit = async (data: SurveyFormData) => {
@@ -85,14 +153,7 @@ export function SwiperSurveyForm() {
   const totalSlides = wantInterview === "yes" ? 12 : 11;
 
   return (
-    <div className="relative w-full h-screen">
-      {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-sm border-b border-neon-cyan/30 p-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-neon-cyan neon-text text-center">
-          1인 창업가 설문조사
-        </h1>
-      </div>
-
+    <div className={`relative w-full h-screen${!canAdvance ? " nav-next-disabled" : ""}`}>
       {/* Status Messages */}
       {submitStatus === "success" && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 bg-neon-green/20 border-2 border-neon-green rounded-lg neon-border">
@@ -111,10 +172,10 @@ export function SwiperSurveyForm() {
       )}
 
       {/* Swiper */}
-      <form onSubmit={handleSubmit(onSubmit)} className="h-full pt-20">
+      <form onSubmit={handleSubmit(onSubmit)} className="h-full pt-16">
         <Swiper
           onSwiper={(swiper) => (swiperRef.current = swiper)}
-          onSlideChange={(swiper) => setCurrentSlide(swiper.activeIndex)}
+          onSlideChange={handleSlideChange}
           modules={[Pagination, Navigation, Keyboard]}
           spaceBetween={0}
           slidesPerView={1}
@@ -379,7 +440,10 @@ export function SwiperSurveyForm() {
                 <div className="mt-6 text-center">
                   <button
                     type="button"
-                    onClick={goToNextSlide}
+                    onClick={async () => {
+                      const valid = await trigger("interviewContact");
+                      if (valid) goToNextSlide();
+                    }}
                     className="px-8 py-3 bg-black border-2 border-neon-yellow text-neon-yellow text-lg font-bold rounded-lg hover:bg-neon-yellow hover:text-black transition-all neon-border"
                   >
                     다음

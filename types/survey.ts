@@ -23,3 +23,17 @@ export type DifficultyOption = {
 };
 
 export type SubmitStatus = "success" | "error" | null;
+
+export type SolutionType = "ai_persona" | "data_ai_persona" | "real_person";
+
+export type LandingFormData = {
+  preferredSolution: SolutionType;
+  email: string;
+  currentStage: string;
+  concern: string;
+};
+
+export type LandingMiniSurveyData = {
+  choiceReason: string;
+  monthlyBudget: string;
+};
