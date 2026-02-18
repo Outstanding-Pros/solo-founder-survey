@@ -3,6 +3,7 @@ import { Space_Grotesk } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { GNB } from "@/components/GNB";
+import { Footer } from "@/components/Footer";
 
 const GTM_ID = "GTM-K8G55MWL";
 
@@ -47,6 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </noscript>
         <GNB />
         {children}
+        <Footer />
       </body>
     </html>
   );
